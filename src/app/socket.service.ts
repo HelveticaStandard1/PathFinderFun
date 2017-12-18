@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {Subject} from 'rxjs/Subject';
+import {environment} from "../../config/environments/environment";
 import {Observable} from 'rxjs/Observable';
 import * as io from 'socket.io-client';
 
@@ -7,11 +7,12 @@ import * as io from 'socket.io-client';
 @Injectable()
 export class SocketService {
 
-  private url = 'http://192.168.1.10:3000';
+  private url = environment.socket.baseUrl;
+  private urlOpts = environment.socket.opts;
   private socket;
 
   constructor() {
-    this.socket = io(this.url);
+    this.socket = io(this.url, this.urlOpts);
   }
 
   sendMessage(message) {
