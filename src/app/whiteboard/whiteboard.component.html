@@ -3,7 +3,11 @@
   <canvas class="whiteboard" (mousedown)="onMouseDown($event)"
           (mouseup)="onMouseUp($event)"
           (mouseout)="onMouseUp($event)"
-          (mousemove)="throttle(onMouseMove($event),10)"></canvas>
+          (mousemove)="throttle(onMouseMove($event),10)"
+          (touchstart) = "onTouchStart($event)"
+          (touchend)="onTouchEnd($event)"
+          (touchmove) = "throttle(onTouchMove($event),100)"
+  ></canvas>
 
   <div>
     <div class="colors">
