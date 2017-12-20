@@ -34,7 +34,11 @@ export class WhiteboardComponent implements OnInit, OnDestroy {
         this.context.moveTo(x0, y0);
         this.context.lineTo(x1, y1);
         this.context.strokeStyle = color;
-        this.context.lineWidth = 2;
+        if (color === 'white') {
+            this.context.lineWidth = 20;
+        } else {
+            this.context.lineWidth = 2;
+        }
         this.context.stroke();
         this.context.closePath();
 
