@@ -42,3 +42,7 @@ html, body {
 .color.green { background-color: green; }
 .color.blue { background-color: blue; }
 .color.yellow { background-color: yellow; }
+.color.white {
+  background-color: white;
+  border-style: solid;
+}
