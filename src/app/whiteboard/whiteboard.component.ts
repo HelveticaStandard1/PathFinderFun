@@ -3,125 +3,154 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {SocketService} from "../socket.service";
 
 @Component({
-  selector: 'app-whiteboard',
-  templateUrl: './whiteboard.component.html',
-  styleUrls: ['./whiteboard.component.css']
+    selector: 'app-whiteboard',
+    templateUrl: './whiteboard.component.html',
+    styleUrls: ['./whiteboard.component.css']
 })
 export class WhiteboardComponent implements OnInit, OnDestroy {
 
-  canvas;
-  colors;
-  context;
-  whiteBoardConnection;
-  clearBoardConnection;
-  current = {color: 'black', x: '', y: ''};
-  drawing = false;
+    canvas;
+    colors;
+    context;
+    whiteBoardConnection;
+    clearBoardConnection;
+    current = {color: 'black', x: '', y: ''};
+    drawing = false;
 
-  constructor(private socketService: SocketService) {
-  }
-
-  clearWhiteBoard() {
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  }
-
-  clear() {
-    this.socketService.emit('clear-drawing', {});
-    this.clearWhiteBoard();
-  }
-
-  drawLine(x0, y0, x1, y1, color, emit) {
-    this.context.beginPath();
-    this.context.moveTo(x0, y0);
-    this.context.lineTo(x1, y1);
-    this.context.strokeStyle = color;
-    this.context.lineWidth = 2;
-    this.context.stroke();
-    this.context.closePath();
-
-    if (!emit) {
-      return;
+    constructor(private socketService: SocketService) {
     }
-    const w = this.canvas.width;
-    const h = this.canvas.height;
 
-    this.socketService.emit('drawing', {
-      x0: x0 / w,
-      y0: y0 / h,
-      x1: x1 / w,
-      y1: y1 / h,
-      color: color
-    });
-  }
-
-  onMouseDown(e) {
-    this.drawing = true;
-    this.current.x = e.clientX;
-    this.current.y = e.clientY;
-  }
-
-  onMouseUp(e) {
-    if (!this.drawing) {
-      return;
+    clearWhiteBoard() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
-    this.drawing = false;
-    this.drawLine(this.current.x, this.current.y, e.clientX, e.clientY, this.current.color, true);
-  }
 
-  onMouseMove(e) {
-    if (!this.drawing) {
-      return;
+    clear() {
+        this.socketService.emit('clear-drawing', {});
+        this.clearWhiteBoard();
     }
-    this.drawLine(this.current.x, this.current.y, e.clientX, e.clientY, this.current.color, true);
-    this.current.x = e.clientX;
-    this.current.y = e.clientY;
-  }
 
-  onColorUpdate(e) {
-    this.current.color = e.target.className.split(' ')[1];
-  }
+    drawLine(x0, y0, x1, y1, color, emit) {
+        this.context.beginPath();
+        this.context.moveTo(x0, y0);
+        this.context.lineTo(x1, y1);
+        this.context.strokeStyle = color;
+        this.context.lineWidth = 2;
+        this.context.stroke();
+        this.context.closePath();
 
-  throttle(callback, delay) {
-    let previousCall = new Date().getTime();
-    return function () {
-      const time = new Date().getTime();
+        if (!emit) {
+            return;
+        }
+        const w = this.canvas.width;
+        const h = this.canvas.height;
 
-      if ((time - previousCall) >= delay) {
-        previousCall = time;
-        callback.apply(null, arguments);
-      }
-    };
-  }
+        this.socketService.emit('drawing', {
+            x0: x0 / w,
+            y0: y0 / h,
+            x1: x1 / w,
+            y1: y1 / h,
+            color: color
+        });
+    }
 
-  @HostListener("window:resize", [])
-  onResize() {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
-  }
+    onMouseDown(e) {
+        this.drawing = true;
+        this.current.x = e.clientX;
+        this.current.y = e.clientY;
+    }
 
-  onDrawingEvent(data) {
-    const w = this.canvas.width;
-    const h = this.canvas.height;
-    this.drawLine(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color, false);
-  }
+    onTouchStart(e) {
+        if (e.target === this.canvas) {
+            e.preventDefault();
+        }
+        this.onMouseDown(this.getTouchPos(this.canvas, e));
+    }
 
-  ngOnInit() {
-    this.canvas = document.getElementsByClassName('whiteboard')[0];
-    this.colors = document.getElementsByClassName('color');
-    this.context = this.canvas.getContext('2d');
+    onMouseUp(e) {
+        if (!this.drawing) {
+            return;
+        }
+        this.drawing = false;
+        this.drawLine(this.current.x, this.current.y, e.clientX, e.clientY, this.current.color, true);
+    }
 
-    this.whiteBoardConnection = this.socketService.getWhiteBoard().subscribe(data => {
-      this.onDrawingEvent(data);
-    });
+    onTouchEnd(e) {
+        if (e.target === this.canvas) {
+            e.preventDefault();
+        }
+        this.onMouseUp(this.getTouchPos(this.canvas, e));
+    }
 
-    this.clearBoardConnection = this.socketService.getWhiteBoardClear().subscribe(data => {
-      this.clearWhiteBoard();
-    });
-    this.onResize();
-  }
+    onMouseMove(e) {
+        if (!this.drawing) {
+            return;
+        }
+        this.drawLine(this.current.x, this.current.y, e.clientX, e.clientY, this.current.color, true);
+        this.current.x = e.clientX;
+        this.current.y = e.clientY;
+    }
 
-  ngOnDestroy() {
-    this.whiteBoardConnection.unsubscribe();
-    this.clearBoardConnection.unsubscribe();
-  }
+    onTouchMove(e) {
+        if (e.target === this.canvas) {
+            e.preventDefault();
+        }
+        this.onMouseMove(this.getTouchPos(this.canvas, e));
+    }
+
+    onColorUpdate(e) {
+        this.current.color = e.target.className.split(' ')[1];
+    }
+
+    throttle(callback, delay) {
+        let previousCall = new Date().getTime();
+        return function () {
+            const time = new Date().getTime();
+
+            if ((time - previousCall) >= delay) {
+                previousCall = time;
+                callback.apply(null, arguments);
+            }
+        };
+    }
+
+    getTouchPos(canvasDom, touchEvent) {
+        const rect = canvasDom.getBoundingClientRect();
+        return {
+            clientX: touchEvent.touches[0].clientX - rect.left,
+            clientY: touchEvent.touches[0].clientY - rect.top
+        };
+    }
+
+    @HostListener("window:resize", [])
+    onResize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    }
+
+    onDrawingEvent(data) {
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+        this.drawLine(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color, false);
+    }
+
+    ngOnInit() {
+        this.canvas = document.getElementsByClassName('whiteboard')[0];
+        this.colors = document.getElementsByClassName('color');
+        this.context = this.canvas.getContext('2d');
+
+        this.whiteBoardConnection = this.socketService.getWhiteBoard().subscribe(data => {
+            this.onDrawingEvent(data);
+        });
+
+        this.clearBoardConnection = this.socketService.getWhiteBoardClear().subscribe(data => {
+            this.clearWhiteBoard();
+        });
+        this.onResize();
+    }
+
+    ngOnDestroy() {
+        this.whiteBoardConnection.unsubscribe();
+        this.clearBoardConnection.unsubscribe();
+    }
 
 }
