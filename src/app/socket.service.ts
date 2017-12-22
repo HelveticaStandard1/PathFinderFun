@@ -31,7 +31,19 @@ export class SocketService {
     return observable;
   }
 
-  getWhiteBoard() {
+  getWhiteBoardState() {
+    const observable = new Observable( observer => {
+      this.socket.on('current-drawing', (data) => {
+        observer.next(data);
+      });
+      return () => {
+        this.socket.disconnect();
+      };
+    });
+    return observable;
+  }
+
+  getUpdateBoard() {
     const observable = new Observable(observer => {
       this.socket.on('drawing', (data) => {
         observer.next(data);
