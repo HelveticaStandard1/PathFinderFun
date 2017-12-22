@@ -1,10 +1,10 @@
 export const environment = {
     production: false,
     socket: {
-        baseUrl: 'https://desolate-dawn-74822.herokuapp.com',
+        baseUrl: 'http://localhost:3000',
         opts: {}
     },
     api: {
-        baseUrl: 'https://desolate-dawn-74822.herokuapp.com'
+        baseUrl: 'http://localhost:3000'
     }
 };

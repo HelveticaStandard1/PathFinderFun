@@ -14,6 +14,7 @@ export class WhiteboardComponent implements OnInit, OnDestroy {
     context;
     whiteBoardConnection;
     clearBoardConnection;
+    initialBoardStateConnection;
     current = {color: 'black', x: '', y: ''};
     drawing = false;
 
@@ -53,7 +54,8 @@ export class WhiteboardComponent implements OnInit, OnDestroy {
             y0: y0 / h,
             x1: x1 / w,
             y1: y1 / h,
-            color: color
+            color: color,
+            canvas: this.canvas.toDataURL()
         });
     }
 
@@ -125,6 +127,15 @@ export class WhiteboardComponent implements OnInit, OnDestroy {
         };
     }
 
+    drawCurrentState(canvasUrl) {
+        const img = new Image;
+        const context = this.context;
+        img.onload = function() {
+            context.drawImage(img, 0, 0);
+        };
+        img.src = canvasUrl;
+    }
+
     @HostListener("window:resize", [])
     onResize() {
         this.canvas.width = window.innerWidth;
@@ -142,19 +153,27 @@ export class WhiteboardComponent implements OnInit, OnDestroy {
         this.colors = document.getElementsByClassName('color');
         this.context = this.canvas.getContext('2d');
 
-        this.whiteBoardConnection = this.socketService.getWhiteBoard().subscribe(data => {
+        this.whiteBoardConnection = this.socketService.getUpdateBoard().subscribe(data => {
             this.onDrawingEvent(data);
         });
 
         this.clearBoardConnection = this.socketService.getWhiteBoardClear().subscribe(data => {
             this.clearWhiteBoard();
         });
+
+        this.initialBoardStateConnection = this.socketService.getWhiteBoardState().subscribe(data => {
+            this.drawCurrentState(data[0].canvasUrl);
+        });
+
+        this.socketService.emit('get-drawing', {});
+
         this.onResize();
     }
 
     ngOnDestroy() {
         this.whiteBoardConnection.unsubscribe();
         this.clearBoardConnection.unsubscribe();
+        this.initialBoardStateConnection.unsubscribe();
     }
 
 }

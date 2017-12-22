@@ -1,10 +1,10 @@
 export const environment = {
     production: true,
     socket: {
-        baseUrl: 'https://shrouded-lowlands-49974.herokuapp.com',
+        baseUrl: 'https://desolate-dawn-74822.herokuapp.com',
         opts: {}
     },
     api: {
-        baseUrl: 'https://shrouded-lowlands-49974.herokuapp.com'
+        baseUrl: 'http://desolate-dawn-74822.herokuapp.com'
     }
 };

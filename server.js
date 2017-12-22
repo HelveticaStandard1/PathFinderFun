@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const http = require('http');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 const api = require('./server/routes/api');
 
@@ -35,5 +36,6 @@ app.set('port', port);
 
 server.listen(port, () => console.log(`API running on localhost:${port}`));
 
-require('./socket')(io);
+require('./server/socket/socket')(io);
+require('./server/db/db')(mongoose);
 
