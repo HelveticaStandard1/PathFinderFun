@@ -21,6 +21,7 @@ module.exports = function (io) {
         });
 
         socket.on('clear-drawing', () => {
+            require('../startup/clearwhiteboard')(require('../db/models/gameboard'));
             io.emit('clear-drawing');
         });
 
